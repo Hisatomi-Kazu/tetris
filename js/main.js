@@ -165,7 +165,7 @@ function fallBlocks() {
   // 下から2番目の行から繰り返しクラスを下げる
   for (var row = 18; row >= 0; row--) {
         for (var col = 0; col < 10; col++) {
-          //base = 属性
+          //base = 属性の有無
             if (cells[row][col].base) {
                 cells[row+1][col].base = true;
                 cells[row][col].base = null;
@@ -281,7 +281,130 @@ function moveDown(){
 }
 
 function turnBlock() {
-  
+  var turnStartingPointRow;
+  var turnStatringPointCol;
+  var blockClass;
+  //回転させるブロックの場所まで移動し,起点を決める
+  /*
+  for(var row = 0; row < 20; row++) {
+    for(var col = 0; col < 10; col++) {
+      if(cells[row][col].blocknum === fallingBlockNum) {
+        turnStartingPointRow = row;
+        turnStatringPointCol = col;
+        blockClass = cells[row][col].className;
+        break; //一番下の一番左のセルが起点となる.
+      }
+    }
+  }
+  */
+  for(var row = 0; row < 20; row++) {
+    for(var col = 0; col < 10; col++) {
+      if(cells[row][col].base) {
+        turnStartingPointRow = row;
+        turnStatringPointCol = col;
+        blockClass = cells[row][col].className;
+        break;
+      }
+    }
+  }
+  //oは回転させても形が変わらないのでクラスoの場合はこれ以降の処理をしない
+  if(blockClass === "o") {
+    return;
+  }
+  //回転範囲内に別のブロックがないか
+  /*
+  if(blockClass === "i") { //iだけは回転に4つマスがいる
+    for(var i = 0; i < 4; i++) {
+      for(var j = 0; j < 4; j++) {
+        if(cells[turnStartingPointRow - i][turnStatringPointCol + j].className !== "" && cells[turnStartingPointRow - i][turnStatringPointCol + j].blockNum !== fallingBlockNum) {
+          return; //回転できない
+        }
+      }
+    }
+  }
+  if(blockClass !== "i") { //回転範囲が4のiと回転しないo以外の場合
+    for(var i = 0; i < 3; i++) {
+      for(var j = 0; j < 3; j++) {
+        if(cells[turnStartingPointRow - i][turnStatringPointCol + j].className !== "" && cells[turnStartingPointRow - i][turnStatringPointCol + j].blockNum !== fallingBlockNum) {
+          return; //回転できない
+        }
+      }
+    }
+  }
+  */
+  if(blockClass === "i") { //iだけは回転に4つマスがいる
+    for(var i = 0; i < 4; i++) {
+      for(var j = 0; j < 4; j++) {
+        if(cells[turnStartingPointRow + i][turnStatringPointCol + j].className !== "" && cells[turnStartingPointRow + i][turnStatringPointCol + j].blockNum !== fallingBlockNum) {
+          return; //回転できない
+        }
+      }
+    }
+  }
+
+  if(blockClass !== "i") { //i以外の場合
+    for(var i = 0; i < 3; i++) {
+      for(var j = 0; j < 3; j++) {
+        if(cells[turnStartingPointRow + i][turnStatringPointCol + j].className !== "" && cells[turnStartingPointRow + i][turnStatringPointCol + j].blockNum !== fallingBlockNum) {
+          return; //回転できない
+        }
+      }
+    }
+  }
+  //回転させる
+  var turnedBlockCells;
+  if(blockClass === "i") {
+    turnedBlockCells = [
+      ["","","",""],
+      ["","","",""],
+      ["","","",""],
+      ["","","",""]
+    ]
+  } else if(blockClass !== "i") {
+    turnedBlockCells = [
+      ["","",""],
+      ["","",""],
+      ["","",""]
+    ]
+  }
+  if(blockClass === "i") {
+    for(var i = 0; i < 4; i++) {
+      for(var j = 0; j < 4; j++) {
+        //回転後のブロックの形を保存する.
+        turnedBlockCells[j][3 - i] = cells[turnStartingPointRow + i][turnStatringPointCol + j].className;
+      }
+    }
+    for(var i = 0; i < 4; i++) {
+      for(var j = 0; j < 4; j++) {
+        //落ちているフラグを外し,保存しておいてブロックの形を当てはめる.
+        cells[turnStartingPointRow + i][turnStatringPointCol + j].blockNum = null;
+        cells[turnStartingPointRow + i][turnStatringPointCol + j].className = turnedBlockCells[i][j];
+        if(turnedBlockCells[i][j] !== "") {
+          //落ちているフラグをつけなおす
+          cells[turnStartingPointRow + i][turnStatringPointCol + j].blockNum = fallingBlockNum;
+        }
+      }
+    }
+  } else if(blockClass !== "i" && blockClass !== "o") {
+    //回転後のブロックの形を保存する
+    for(var i = 0; i < 3; i++) {
+      for(var j = 0; j < 3; j++) {
+        turnedBlockCells[j][2 - i] = cells[turnStartingPointRow + i][turnStatringPointCol + j].className;
+      }
+    }
+    for(var i = 0; i < 3; i++) {
+      for(var j = 0; j < 3; j++) {
+        //落ちているフラグを外し,保存しておいてブロックの形を当てはめる.
+        cells[turnStartingPointRow + i][turnStatringPointCol + j].blockNum = null;
+        cells[turnStartingPointRow + i][turnStatringPointCol + j].className = turnedBlockCells[i][j];
+        if(turnedBlockCells[i][j] !== "") {
+          //落ちているフラグをつけなおす
+          cells[turnStartingPointRow + i][turnStatringPointCol + j].blockNum = fallingBlockNum;
+        }
+      }
+    }
+  }
+
 }
 
 function moveRight() {
